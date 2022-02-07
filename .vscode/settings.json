@@ -1,0 +1,19 @@
+{
+  "workbench.activityBar.visible": true,
+  "editor.minimap.enabled": false,
+  "editor.wordWrap": "on",
+  "diffEditor.ignoreTrimWhitespace": false,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "prettier.semi": false,
+  "editor.tabSize": 2,
+  "prettier.jsxSingleQuote": true,
+  "prettier.singleQuote": true,
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact",
+    "*.erb": "html",
+    "ruby": "html"
+  },
+  "prettier.quoteProps": "preserve",
+  "workbench.colorTheme": "One Monokai"
+}
