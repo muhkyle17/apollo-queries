@@ -1,7 +1,6 @@
-import React from 'react'
-import ReactDOM from 'react-dom'
-import './index.css'
-import reportWebVitals from './reportWebVitals'
+import React, { useState } from 'react'
+import { render } from 'react-dom'
+
 import {
   ApolloClient,
   InMemoryCache,
@@ -16,32 +15,10 @@ const client = new ApolloClient({
 })
 
 const GET_DOGS = gql`
-  query GetDogs {
+  {
     dogs {
       id
       breed
-    }
-  }
-`
-
-client
-  .query({
-    query: gql`
-      query GetDogs {
-        dogs {
-          id
-          breed
-        }
-      }
-    `,
-  })
-  .then((result) => console.log(result))
-
-const GET_DOG_PHOTO = gql`
-  query Dog($breed: String!) {
-    dog(breed: $breed) {
-      id
-      displayImage
     }
   }
 `
@@ -63,41 +40,64 @@ function Dogs({ onDogSelected }) {
   )
 }
 
+const GET_DOG_PHOTO = gql`
+  query dog($breed: String!) {
+    dog(breed: $breed) {
+      id
+      displayImage
+    }
+  }
+`
+
 function DogPhoto({ breed }) {
-  const { loading, error, data, refetch } = useQuery(GET_DOG_PHOTO, {
-    variables: { breed },
-    pollInterval: 500,
-  })
+  const { loading, error, data, refetch, networkStatus } = useQuery(
+    GET_DOG_PHOTO,
+    {
+      variables: { breed },
+      notifyOnNetworkStatusChange: true,
+      // pollInterval: 500
+    }
+  )
 
+  if (networkStatus === 4) return <p>Refetching!</p>
   if (loading) return null
-  if (error) return `Error! ${error}`
+  if (error) return `Error!: ${error}`
 
-  return (<img
-    src={data.dog.displayImage}
-    style={{ height: 100, width: 100 }}
-  />)(<button onClick={() => refetch()}>Refetch!</button>)
-}
-
-function App() {
   return (
     <div>
-      <h2>My first Apollo app 🚀</h2>
-      <Dogs />
-      <DogPhoto />
+      <div>
+        <img src={data.dog.displayImage} style={{ height: 100, width: 100 }} />
+      </div>
+      <button onClick={() => refetch()}>Refetch!</button>
+      <button
+        onClick={() =>
+          refetch({
+            breed: 'dalmatian', // Always refetches a dalmatian instead of original breed
+          })
+        }
+      >
+        Refetch Dalmatian!
+      </button>
     </div>
   )
 }
 
-ReactDOM.render(
-  <React.StrictMode>
-    <ApolloProvider client={client}>
-      <App />
-    </ApolloProvider>
-  </React.StrictMode>,
-  document.getElementById('root')
-)
+function App() {
+  const [selectedDog, setSelectedDog] = useState(null)
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals()
+  function onDogSelected({ target }) {
+    setSelectedDog(target.value)
+  }
+
+  return (
+    <ApolloProvider client={client}>
+      <div>
+        <h2>Building Query components 🚀</h2>
+        {selectedDog && <DogPhoto breed={selectedDog} />}
+        <Dogs onDogSelected={onDogSelected} />
+      </div>
+    </ApolloProvider>
+  )
+}
+
+render(<App />, document.getElementById('root'))
